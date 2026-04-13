@@ -5,55 +5,43 @@
 
 ## Part (a) — System Framework Diagram
 
-```
-  Raw Text Comment
-        │
-        ▼
-┌───────────────────────────────────────────────────────┐
-│  STAGE 1 — Text Preprocessor          [configurable]  │
-│  HOF: make_cleaner(chars_to_remove)                   │
-│       → returns: clean : str → str                    │
-│  Uses: lambda, map, str.translate                     │
-└───────────────────────────┬───────────────────────────┘
-                            │  cleaned text (str)
-                            ▼
-┌───────────────────────────────────────────────────────┐
-│  STAGE 2 — Tokenizer                                  │
-│  tokenize : str → list[str]                           │
-│  (pure function, not configurable)                    │
-└───────────────────────────┬───────────────────────────┘
-                            │  token list (list[str])
-                            ▼
-┌───────────────────────────────────────────────────────┐
-│  STAGE 3 — Keyword Scorer              [configurable]  │
-│  HOF: make_keyword_scorer(pos_words, neg_words)        │
-│       → returns: score : list[str] → dict             │
-│  Uses: filter, any, reduce (score accumulation)       │
-└───────────────────────────┬───────────────────────────┘
-                            │  score dict {pos, neg, hits}
-                            ▼
-┌───────────────────────────────────────────────────────┐
-│  STAGE 4 — Classifier                  [configurable]  │
-│  HOF: make_classifier(pos_threshold, neg_threshold)    │
-│       → returns: classify : dict → dict               │
-│  Uses: lambda, conditional logic on scores            │
-└───────────────────────────┬───────────────────────────┘
-                            │  result dict + "label"
-                            ▼
-┌───────────────────────────────────────────────────────┐
-│  STAGE 5 — Formatter                   [configurable]  │
-│  HOF: make_formatter(verbose)                         │
-│       → returns: format_result : dict → str           │
-└───────────────────────────┬───────────────────────────┘
-                            │
-                            ▼
-                    Sentiment Label
-              "positive" | "negative" | "neutral"
+```mermaid
+flowchart TB
+            A[Raw Text Comment]
 
-  HOF boundaries:  ██  make_cleaner / make_keyword_scorer /
-                       make_classifier / make_formatter
-  Composition:     ──  pipe() chains all stages left-to-right
-  Data flow:       →   each stage's output is the next stage's input
+            S1[STAGE 1 Text Preprocessor<br/>configurable<br/>HOF make_cleaner with chars_to_remove<br/>returns clean: str to str<br/>uses lambda map str.translate]
+            S2[STAGE 2 Tokenizer<br/>tokenize: str to list of str<br/>pure function and not configurable]
+            S3[STAGE 3 Keyword Scorer<br/>configurable<br/>HOF make_keyword_scorer with pos_words and neg_words<br/>returns score: token list to dict<br/>uses filter any reduce]
+            S4[STAGE 4 Classifier<br/>configurable<br/>HOF make_classifier with pos_threshold and neg_threshold<br/>returns classify: dict to dict<br/>uses lambda and conditional logic]
+            S5[STAGE 5 Formatter<br/>configurable<br/>HOF make_formatter with verbose<br/>returns format_result: dict to str]
+
+            Z[Sentiment Label<br/>positive or negative or neutral]
+
+            A -->|raw text| S1
+            S1 -->|cleaned text| S2
+            S2 -->|token list| S3
+            S3 -->|score dict pos neg hits| S4
+            S4 -->|result dict plus label| S5
+            S5 --> Z
+
+            H[HOF boundaries<br/>make_cleaner<br/>make_keyword_scorer<br/>make_classifier<br/>make_formatter]
+            P[Composition<br/>pipe chains all stages left to right]
+            D[Data flow<br/>output of one stage is input of next stage]
+
+            H -.-> S1
+            H -.-> S3
+            H -.-> S4
+            H -.-> S5
+            P -.-> S1
+            D -.-> S2
+
+            classDef configurable fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px,color:#1b5e20;
+            classDef fixed fill:#e3f2fd,stroke:#1565c0,stroke-width:1px,color:#0d47a1;
+            classDef note fill:#fff8e1,stroke:#ef6c00,stroke-width:1px,color:#e65100;
+
+            class S1,S3,S4,S5 configurable;
+            class S2 fixed;
+            class H,P,D note;
 ```
 
 ---
@@ -112,41 +100,35 @@ analyze = pipe(clean, tokenize, score, classify, fmt)
 │  make_cleaner(chars_to_remove) → clean : str → str    │
 └───────────────────────────┬───────────────────────────┘
                             │ cleaned text (str)
-                            ▼
-┌───────────────────────────────────────────────────────┐
-│  STAGE 2 — Tokenizer                  [UNCHANGED]     │
-│  tokenize : str → list[str]                           │
-└───────────────────────────┬───────────────────────────┘
-                            │ token list (list[str])
-                            ▼
-┌───────────────────────────────────────────────────────┐
-│  STAGE 3 — AI Sentiment Scorer         [REPLACED ██]  │
-│  HOF: make_ai_scorer(model_name, confidence_threshold)│
-│       → returns: ai_score : list[str] → dict          │
-│  Produces the SAME output dict shape as make_keyword_ │
-│  scorer, so Stage 4 and Stage 5 need zero changes.    │
-└───────────────────────────┬───────────────────────────┘
-                            │ score dict {pos, neg, net, ...}
-                            ▼
-┌───────────────────────────────────────────────────────┐
-│  STAGE 4 — Classifier                  [UNCHANGED]    │
-│  make_classifier(pos_threshold, neg_threshold)        │
-└───────────────────────────┬───────────────────────────┘
-                            │ result dict + "label"
-                            ▼
-┌───────────────────────────────────────────────────────┐
-│  STAGE 5 — Formatter                   [UNCHANGED]    │
-│  make_formatter(verbose) → format_result : dict → str │
-└───────────────────────────┬───────────────────────────┘
-                            │
-                            ▼
-                    Sentiment Label
-              "positive" | "negative" | "neutral"
+                            ▼```mermaid
+flowchart TB
+            A[Raw Text Comment]
 
-  ██ Only Stage 3 is swapped. The pipeline wiring (pipe) and every
-     other stage function are reused without modification.
+            S1[STAGE 1 Text Preprocessor<br/>UNCHANGED<br/>make_cleaner with chars_to_remove returns clean: str to str]
+            S2[STAGE 2 Tokenizer<br/>UNCHANGED<br/>tokenize: str to list of str]
+            S3[STAGE 3 AI Sentiment Scorer<br/>REPLACED<br/>HOF make_ai_scorer with model_name and confidence_threshold<br/>returns ai_score: list of str to dict<br/>same output dict shape as keyword scorer]
+            S4[STAGE 4 Classifier<br/>UNCHANGED<br/>make_classifier with thresholds]
+            S5[STAGE 5 Formatter<br/>UNCHANGED<br/>make_formatter with verbose returns string output]
+            Z[Sentiment Label<br/>positive or negative or neutral]
+
+            A -->|raw text| S1
+            S1 -->|cleaned text| S2
+            S2 -->|token list| S3
+            S3 -->|score dict pos neg net| S4
+            S4 -->|result dict plus label| S5
+            S5 --> Z
+
+            N[Only Stage 3 is swapped<br/>pipeline wiring and other stages are reused]
+            N -.-> S3
+
+            classDef unchanged fill:#e3f2fd,stroke:#1565c0,stroke-width:1px,color:#0d47a1;
+            classDef replaced fill:#ffebee,stroke:#c62828,stroke-width:1px,color:#b71c1c;
+            classDef note fill:#fff8e1,stroke:#ef6c00,stroke-width:1px,color:#e65100;
+
+            class S1,S2,S4,S5 unchanged;
+            class S3 replaced;
+            class N note;
 ```
-
 ### What changed and what did not
 
 | Stage | Status | Reason |
