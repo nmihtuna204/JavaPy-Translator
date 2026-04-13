@@ -1,22 +1,2 @@
-# Node
-node_modules/
-dist/
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.venv/
-.env
-.pytest_cache/
-
-# ANTLR generated
-.antlr/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
+.vscode
+__pycache__
