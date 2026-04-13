@@ -91,16 +91,7 @@ analyze = pipe(clean, tokenize, score, classify, fmt)
 
 ### Refactored Framework Diagram
 
-```
-  Raw Text Comment
-        │
-        ▼
-┌───────────────────────────────────────────────────────┐
-│  STAGE 1 — Text Preprocessor          [UNCHANGED]     │
-│  make_cleaner(chars_to_remove) → clean : str → str    │
-└───────────────────────────┬───────────────────────────┘
-                            │ cleaned text (str)
-                            ▼```mermaid
+```mermaid
 flowchart TB
             A[Raw Text Comment]
 
