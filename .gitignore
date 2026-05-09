@@ -1,22 +1,48 @@
-# Node
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+logs/
+
+# Node / Frontend
 node_modules/
 dist/
+dist-ssr/
+*.local
+.npm/
 
-# Python
+# Python / Backend
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
 .venv/
+env/
+venv/
+ENV/
 .env
 .pytest_cache/
-
-# ANTLR generated
 .antlr/
+backend/conversation_contexts.json
+backend/CompiledFiles/*
+!backend/CompiledFiles/.gitkeep
+backend/antlr_jar/*.jar
 
 # OS
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+desktop.ini
 
-# Logs
-*.log
+# Editor / IDE
+.vscode/
+!.vscode/launch.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
