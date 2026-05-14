@@ -1,41 +1,90 @@
-# Detailed Presentation Script: JavaPy-Translator (5 Mins)
+# Presentation Script: JavaPy-Translator (~6 mins)
 
 ## Preparation
-- **Tab 1**: `landing.html` (Primary visual aid).
-- **Tab 2**: The live application (Demo environment).
+- **Tab 1**: `landing.html` open at `#team`.
+- **Tab 2**: The live application, already loaded.
+- Rehearse the demo inputs so there is no typing delay.
 
 ---
 
-## 1. Team & Vision (Lê Hưng - 1:00)
-**Action**: Stay on `landing.html#team`.
-> "Good morning. We are the team behind **JavaPy-Translator**. Manual code migration is a bottleneck in modern development; our project applies formal language theory to automate bidirectional translation between Java and Python.
+## 1. Team & Vision — Lê Hưng (1:15)
+**Action**: Stay on `landing.html` → `#team`.
+
+> "Good morning. We are the team behind **JavaPy-Translator** — a bidirectional compiler-middleware that translates between Java and Python using formal language theory.
 >
-> I am **Lê Hưng**, the Team Lead. I architected the FastAPI backend and Docker orchestration. Our vision was to create more than a converter—we built a compiler-middleware that treats 'conversations' as distinct compilation units. As we walk through the technical stack, keep in mind that our goal was semantic preservation: ensuring that logic, not just text, survives the translation."
+> I am **Lê Hưng**, the team lead. I designed the FastAPI backend and the conversation model at its core. The key architectural insight is this: rather than treating every request as an isolated conversion, we model each browser chat session as a **stateful compilation unit**. The server keeps a per-conversation context — last code, last parse tree, saved snapshot, and translation direction. This lets users chain commands — translate, inspect the tree, run the output, save the code — all within the same session, exactly like interacting with a compiler REPL.
+>
+> The translation pipeline has three layers: an ANTLR **lexer** tokenizes the input, a **parser** builds a Concrete Syntax Tree, and a **visitor** walks that tree to emit the target language. We implemented *three* separate ANTLR grammars — one for Python→Java, one for Java→Python, and one for a natural-language command DSL. Let my teammates walk you through each layer."
 
 ---
 
-## 2. Grammar Architecture (Nguyễn Minh Phúc - 2:00)
-**Action**: Click 'Grammar Design' on `landing.html`.
-> "My name is **Nguyễn Minh Phúc**, and I am the Grammar Architect. The foundation of this system is its **Context-Free Grammars**. 
+## 2. Grammar Architecture — Nguyễn Minh Phúc (1:45)
+**Action**: Click **'Grammar Design'** on `landing.html`.
+
+> "I am **Nguyễn Minh Phúc**, the Grammar Architect. I wrote all three ANTLR4 Context-Free Grammars. Let me highlight the three problems I had to solve.
 >
-> As shown on the left, we designed a **Recursive Descent Hierarchy**. For Java, we strictly follow class and method definitions. For Python, we had to solve a unique Lexical challenge: **Indentation**. Look at our `NL` lexer rule—it captures newlines and following spaces to preserve the block structure, which the parser then uses to identify scopes.
+> **First: structural asymmetry.** Java is brace-delimited — `classDef → classBody → methodDef → block`. Python is indentation-delimited. These are fundamentally different block models. For Python, I could not just skip whitespace. I had to make the `NL` lexer rule *capture* the newline and any following tabs, so the parser can use indentation to identify block boundaries. On the Java side, `NL` is discarded entirely — `NL: ... -> skip`.
 >
-> On the right, notice our **Expression Hierarchy**. This is where we apply PPL principles for **Operator Precedence**. By nesting rules from `logicExp` down to `mulExp` and `unaryExp`, we enforce PEMDAS rules directly within the syntax tree. This means the parser 'knows' multiplication has higher precedence than addition before any logic is even executed. We also implemented a **Command DSL** that allows natural language control over the engine."
+> **Second: operator precedence.** Both grammars encode PEMDAS directly in the rule hierarchy — from `logicExp` at the top, down through `compExp`, `addExp`, `mulExp`, to `unaryExp` and finally `atom`. Because `mulExp` is deeper in the tree than `addExp`, multiplication is parsed first, without a single explicit precedence annotation.
+>
+> **Third: the Command DSL.** Instead of a separate UI for switching modes, I defined a third grammar that recognizes natural language phrases: `verb noun* target?`. A word like `translate` becomes a `verb`, `python` and `java` become `source` and `target_lang`. The server tries the command grammar first on *every* request. If the visitor returns `'0'` — not a command — the input falls through to the code translator. This means one endpoint handles everything."
 
 ---
 
-## 3. Mapping Logic (Nguyễn Minh Tuấn - 1:00)
-**Action**: Click 'Mapping Logic' on `landing.html`.
-> "I am **Nguyễn Minh Tuấn**, responsible for the Visitor implementation. Once Phúc's grammar creates the Parse Tree, my logic 'walks' it.
+## 3. Visitor Logic & Type Inference — Nguyễn Minh Tuấn (1:15)
+**Action**: Click **'Mapping Logic'** on `landing.html`.
+
+> "I am **Nguyễn Minh Tuấn**. I implemented the two Visitor classes that walk the parse tree and emit code.
 >
-> The most critical challenge I solved was **Type Inference**. Since Python is dynamically typed, my engine must analyze literals—like `5.0` vs `"5"`—to decide if the Java equivalent should be a `double` or a `String`. We also map complex constructs: for instance, transforming a Python `range()` into a standard Java triple-header for-loop. This isn't just translation; it's a semantic bridge between two fundamentally different type systems."
+> The Visitor Pattern is the right fit here because it keeps translation logic entirely separate from the grammar. Each `visitX` method handles exactly one grammar rule.
+>
+> The hardest problem was **type inference for Python→Java**. Python is dynamically typed, so `x = 5` has no type annotation. My `inferType` method walks the expression's subtree bottom-up: if it reaches an `AtomContext` and finds a `FLOAT` token, it returns `double`; a `STRING` token returns `String`; `TRUE`/`FALSE` returns `boolean`; otherwise `int`. Logical and comparison operators short-circuit to `boolean`. This runs at parse time — no separate analysis pass needed.
+>
+> The other challenge was **loop translation**. Python's `for i in range(start, stop, step)` maps to Java's triple-header `for (int i = start; i < stop; i += step)`. In the reverse direction, Java's C-style for loop has no direct Python equivalent, so my Java→Python visitor converts it into a `while` loop with explicit initialization and increment statements.
+>
+> Indentation in Java→Python is managed by an `indent_level` counter that increments on block entry and decrements on exit — producing correct Python whitespace structurally, not by string replacement."
 
 ---
 
-## 4. Live Demo & Closing (Lê Nhật Anh - 1:00)
+## 4. Live Demo & Closing — Lê Nhật Anh (1:30)
 **Action**: Switch to the **Live App Tab**.
-> "I am **Lê Nhật Anh**, the Frontend Developer. I built the interface using React and Vite, with a focus on persistence. 
-> 
-> Let's see the system in action. I'll type a Python loop... [Action: Translate code]. The result is idiomatic Java. Now, watch as we inspect the **Parse Tree** using the 'show grammar' command [Action: Show tree]. This visualizes the rules Phuc just explained. Finally, we can execute the code directly [Action: Show output] to verify its behavior.
+
+> "I am **Lê Nhật Anh**, the Frontend Developer. I built the chat UI in React 18 + Vite + Tailwind. Each conversation is fully independent — its own ID, its own direction, its own saved code, all persisted in `localStorage` so sessions survive page refreshes.
 >
-> JavaPy-Translator proves that formal PPL concepts are the key to building intelligent, cross-language developer tools. Thank you!"
+> **[Action: In a new conversation, type:]**
+> ```
+> translate python to java
+> ```
+> The server's command grammar picks this up and returns direction `pytojava`.
+>
+> **[Action: Paste and send:]**
+> ```python
+> def factorial(n):
+>     if n <= 1:
+>         return 1
+>     return n * factorial(n - 1)
+>
+> if __name__ == "__main__":
+>     print(factorial(5))
+> ```
+> The parse tree is built, the visitor walks it, and we get idiomatic Java — with static typing, curly braces, and `System.out.println`.
+>
+> **[Action: Send `show grammar`]**
+> This retrieves the stored parse tree from the server and renders the ANTLR node hierarchy Phúc designed.
+>
+> **[Action: Send `show output`]**
+> The server compiles the Java with `javac`, runs it with `java`, captures stdout, and returns `120`.
+>
+> In six minutes we have shown a complete PPL pipeline: formal grammars, LL(*) parsing, visitor-based code generation, and type inference — all integrated into a live, stateful chat application. Thank you."
+
+---
+
+## Timing Summary
+
+| Speaker | Section | Target |
+|---|---|---|
+| Lê Hưng | Team & Vision | 1:15 |
+| Nguyễn Minh Phúc | Grammar Architecture | 1:45 |
+| Nguyễn Minh Tuấn | Visitor Logic & Type Inference | 1:15 |
+| Lê Nhật Anh | Live Demo & Closing | 1:30 |
+| **Total** | | **~5:45** |
