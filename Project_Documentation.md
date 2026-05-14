@@ -1,395 +1,101 @@
-# Bidirectional Java-Python Code Translator: A Programming Language Framework
+# Project Documentation: JavaPy-Translator
 
-## 1. Problem Statement and System Description
+## 1. Project Name
+**JavaPy-Translator**: A Bidirectional Code Translation Framework for Java and Python.
 
-### 1.1 Problem Statement
+## 2. Member Contributions
+*Note: Please update the names and specific contributions below as per your team structure.*
 
-In the modern software development landscape, developers often work with multiple programming languages to leverage specific strengths of each language. Java, with its strong typing and object-oriented features, excels in enterprise applications, while Python's simplicity and flexibility make it ideal for rapid prototyping and data science. However, migrating code between these languages manually is time-consuming, error-prone, and requires deep knowledge of both languages' syntax and semantics.
+| Member Name | Key Contributions |
+|-------------|-------------------|
+| [Member 1]  | Team Leader & Backend Architect: Designed and implemented the FastAPI server, core API logic, and the code execution engine. |
+| [Member 2]  | Frontend Developer: Designed and developed the React.js chat interface, state management, and conversation persistence. |
+| [Member 3]  | Logic Implementer: Developed the translation visitor logic and type inference engine based on parsed trees. |
+| [Member 4]  | Grammar Architect & Documentation: Designed the `py2java.g4`, `java2py.g4`, and `command.g4` grammars; handled operator precedence and project documentation. |
 
-The primary challenges addressed by this system include:
-- **Syntax Translation Complexity**: Converting language-specific constructs (Java's `System.out.println()` vs Python's `print()`)
-- **Type System Differences**: Handling Java's static typing vs Python's dynamic typing
-- **Control Structure Variations**: Managing different loop constructs and conditional statements
-- **Interactive Processing**: Providing real-time translation with conversation memory
-- **Grammar Validation**: Ensuring syntactically correct output in both directions
+## 3. Problem Statement and System Description
 
-### 1.2 System Overview
+### 3.1 Problem Statement
+In modern software development, developers frequently switch between **Java** (robust, statically-typed, enterprise-ready) and **Python** (flexible, dynamically-typed, data-science oriented). Manual translation between these languages is:
+- **Error-prone**: Subtle differences in syntax (e.g., semicolons, indentation) lead to bugs.
+- **Time-consuming**: Translating large logic blocks manually wastes developer resources.
+- **Cognitive Load**: Developers must remember deep semantic differences like Type Systems and Control Structures.
 
-This project implements a **bidirectional code translation framework** that converts code between Java and Python using formal language theory principles. The system consists of three main components:
+### 3.2 System Description
+**JavaPy-Translator** is a bidirectional translation framework that solves these issues using formal language theory. The system features:
+- **Bidirectional Translation**: Seamless conversion from Python to Java and Java to Python.
+- **Chat-style Interface**: A modern UI where users can interact with the translator using code or natural language commands.
+- **Command DSL**: Specialized commands like `show grammar` (to see the parse tree) or `show output` (to execute the code).
+- **Persistence**: Remembers conversation context using local storage.
 
-1. **Backend Translation Engine**: A FastAPI-based server implementing ANTLR4 grammars for parsing and translation
-2. **Frontend Web Interface**: A React.js application providing an interactive chat-based interface
-3. **Command Processing System**: A natural language command interpreter for additional functionality
+## 4. Framework and Workflow Visualization
 
-The system supports real-time bidirectional translation, conversation management, code execution, and grammar tree visualization, making it a comprehensive tool for cross-language development.
+The following diagram illustrates the data flow from user input to the final translated output.
 
-## 2. Framework Architecture and Component Techniques
-
-### 2.1 Backend Architecture
-
-#### 2.1.1 ANTLR4 Grammar-Based Parsing
-The core translation engine leverages **ANTLR4 (ANother Tool for Language Recognition)** to implement formal grammars for both Java and Python:
-
-**Python-to-Java Grammar (`py2java.g4`)**:
-```antlr
-grammar py2java;
-program: (stmt | NL)+ EOF;
-stmt: mainStmt | whileStmt | forStmt | ifStmt | funcStmt | asg | breakStmt | postfixStmt | returnStmt | printStmt | callStmt;
-whileStmt: WHILE exp COLON block;
-forStmt: FOR ID IN rangeExp COLON block;
+```mermaid
+graph TD
+    User([User]) -->|Input Code or Command| FE[Frontend: React/Vite]
+    FE -->|POST /convert| BE[Backend: FastAPI]
+    
+    subgraph "Backend Processing"
+    BE -->|Raw String| LP[Lexer & Parser: ANTLR4]
+    LP -->|Parse Tree| VP{Visitor Pattern}
+    VP -->|Translation Logic| T_Code[Translated Code]
+    VP -->|Command Execution| C_Res[Command Result]
+    VP -->|Tree Visualizer| T_Vis[Stringified Tree]
+    end
+    
+    T_Code -->|JSON| BE
+    C_Res -->|JSON| BE
+    T_Vis -->|JSON| BE
+    
+    BE -->|Response| FE
+    FE -->|Render Results| User
 ```
 
-**Java-to-Python Grammar (`java2py.g4`)**:
-```antlr
-grammar java2py;
-program: classDef EOF;
-classDef: PUBLIC CLASS ID '{' classBody '}';
-methodDef: PUBLIC STATIC javaType ID '(' param? ')' block;
-```
-
-#### 2.1.2 Visitor Pattern Implementation
-The system implements the **Visitor Design Pattern** through custom visitor classes (`py2javaVisitor.py`, `java2pyVisitor.py`) that traverse the parse trees and generate target language code:
-
-```python
-class py2javaVisitor(py2javaVisitor):
-    def visitForStmt(self, ctx):
-        var = ctx.ID().getText()
-        range_exp = self.visit(ctx.rangeExp())
-        block_code = self.visit(ctx.block())
-        return f"{range_exp[0]} {var} {range_exp[1]} {{\n{block_code}\n}}"
-```
-
-#### 2.1.3 Type Inference Engine
-A sophisticated type inference system automatically determines variable types during translation:
-
-```python
-def inferType(self, ctx):
-    if isinstance(ctx, py2javaParser.AtomContext):
-        if ctx.STRING(): return "String"
-        elif ctx.FLOAT(): return "double"
-        elif ctx.TRUE() or ctx.FALSE(): return "boolean"
-        elif ctx.NUMBER(): return "int"
-```
-
-### 2.2 Frontend Architecture
-
-#### 2.2.1 React.js Component-Based Design
-The frontend utilizes **React.js** with hooks for state management and component lifecycle:
-
-```javascript
-const [conversations, setConversations] = useState(() => loadConversations())
-const [activeConversationId, setActiveConversationId] = useState(null)
-const [inputMessage, setInputMessage] = useState('')
-const [isLoading, setIsLoading] = useState(false)
-```
-
-#### 2.2.2 Real-time Communication
-**RESTful API communication** enables seamless interaction between frontend and backend:
-
-```javascript
-const convertCode = async (code, conversationId) => {
-    const response = await fetch(`${API_BASE_URL}/convert`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, conversation_id: conversationId })
-    });
-    return response.json();
-};
-```
-
-#### 2.2.3 Conversation Management System
-Persistent conversation storage using browser localStorage with automatic context switching:
-
-```javascript
-const createConversation = () => ({
-    id: generateUniqueId(),
-    title: 'New Conversation',
-    messages: [],
-    createdAt: new Date().toISOString(),
-    direction: null,
-    lastCode: null
-});
-```
-
-### 2.3 Command Processing Framework
-
-#### 2.3.1 Natural Language Command Grammar
-A dedicated ANTLR4 grammar (`command.g4`) processes natural language commands:
-
-```antlr
-grammar command;
-command: verb noun* target? | non_command;
-verb: ('show' | 'tell' | 'save' | 'retrieve' | 'get' | 'store'| 'translate'| 'see');
-target: source TO target_lang;
-source: PYTHON | JAVA;
-target_lang: PYTHON | JAVA;
-```
-
-#### 2.3.2 Command Visitor Implementation
-The command visitor processes parsed commands and executes corresponding actions:
-
-```python
-class commandVisitor(commandVisitor):
-    def visitCommand(self, ctx):
-        if ctx.verb().getText() == "show":
-            return "SHOW_TREE"
-        elif ctx.verb().getText() == "save":
-            return "SAVE_CODE"
-```
-
-## 3. Application of Programming Language Principles (PPL)
-
-### 3.1 Lexical Analysis Implementation
-
-#### 3.1.1 Token Definition and Recognition
-The system implements comprehensive lexical analyzers for both languages using ANTLR4's lexer generation:
-
-**Java Lexer Tokens**:
-```antlr
-PUBLIC: 'public';
-CLASS: 'class';
-STATIC: 'static';
-VOID: 'void';
-INT: 'int';
-DOUBLE: 'double';
-BOOLEAN: 'boolean';
-STRING: 'String';
-SYSTEM: 'System';
-OUT: 'out';
-PRINTLN: 'println';
-```
-
-**Python Lexer Tokens**:
-```antlr
-DEF: 'def';
-IF: 'if';
-ELIF: 'elif';
-ELSE: 'else';
-WHILE: 'while';
-FOR: 'for';
-IN: 'in';
-RANGE: 'range';
-PRINT: 'print';
-TRUE: 'True';
-FALSE: 'False';
-NONE: 'None';
-```
-
-#### 3.1.2 Whitespace and Newline Handling
-Different whitespace handling strategies accommodate each language's syntax requirements:
-
-**Python (Indentation-Sensitive)**:
-```antlr
-NL: ('\r'? '\n' [ \t]*);  // Preserves indentation information
-WS: [ \t]+ -> skip;
-```
-
-**Java (Brace-Delimited)**:
-```antlr
-NL: ('\r'? '\n' [ \t]*) -> skip;  // Skips newlines as they're not syntactically significant
-WS: [ \t]+ -> skip;
-```
-
-### 3.2 Syntax Analysis and Grammar Design
-
-#### 3.2.1 Context-Free Grammar Implementation
-Both grammars implement context-free grammars with proper precedence handling:
-
-**Expression Hierarchy (Java)**:
-```antlr
-exp: logicExp;
-logicExp: compExp | logicExp op=('&&'|'||') compExp;
-compExp: addExp | compExp op=('>'|'<'|'=='|'!='|'<='|'>=') addExp;
-addExp: mulExp | addExp op=('+'|'-') mulExp;
-mulExp: unaryExp | mulExp op=('*'|'/') unaryExp;
-unaryExp: op=('!'|'-') unaryExp | atom;
-```
-
-**Expression Hierarchy (Python)**:
-```antlr
-logicExp: compExp (op=('and'|'or') compExp)*;
-compExp: addExp (op=('>'|'<'|'=='|'!='|'<='|'>=') addExp)*;
-addExp: mulExp (op=('+'|'-') mulExp)*;
-mulExp: unaryExp (op=('*'|'/') unaryExp)*;
-unaryExp: op=('not'|'-') unaryExp | atom;
-```
-
-#### 3.2.2 Left-Recursion Handling
-The grammars address left-recursion differently based on ANTLR4's capabilities:
-- **Java Grammar**: Uses direct left-recursion for operator precedence
-- **Python Grammar**: Uses repetition operators (*) to avoid left-recursion issues
-
-### 3.3 Semantic Analysis and Translation
-
-#### 3.3.1 Abstract Syntax Tree (AST) Processing
-The visitor pattern implementation performs semantic analysis during AST traversal:
-
-**Type Checking and Inference**:
-```python
-def visitAsg(self, ctx):
-    var_name = ctx.ID().getText()
-    value = self.visit(ctx.exp())
-    type_str = self.inferType(ctx.exp())  # Semantic analysis
-    return f"{type_str} {var_name} = {value};"
-```
-
-#### 3.3.2 Symbol Table Management
-Implicit symbol table management through context-aware translation:
-
-**Function Parameter Handling**:
-```python
-def visitParam(self, ctx):
-    if ctx.ID():
-        return ', '.join([id.getText() for id in ctx.ID()])
-    return ""
-```
-
-#### 3.3.3 Scope Resolution
-The system handles scope differences between languages:
-
-**Python Main Block Translation**:
-```python
-def visitMainStmt(self, ctx):
-    block_code = self.visit(ctx.block())
-    return f"public static void main(String[] args) {{\n{block_code}\n}}"
-```
-
-### 3.4 Advanced PPL Concepts Implementation
-
-#### 3.4.1 Language-Specific Construct Translation
-The system implements complex mapping between language constructs:
-
-**Python Range to Java For-Loop**:
-```python
-def visitRangeExp(self, ctx):
-    args = [self.visit(exp) for exp in ctx.exp()]
-    if len(args) == 1:  # range(stop)
-        return (f"for (int", f"= 0; {args[0]} < {args[0]}; {args[0]}++)")
-    elif len(args) == 2:  # range(start, stop)
-        return (f"for (int", f"= {args[0]}; {args[0]} < {args[1]}; {args[0]}++)")
-```
-
-**Java System.out.println to Python print**:
-```python
-def visitPrintStmt(self, ctx):
-    if ctx.printArgs():
-        args = self.visit(ctx.printArgs())
-        return f"print({args})"
-    return "print()"
-```
-
-#### 3.4.2 Error Handling and Recovery
-Custom error listeners provide comprehensive syntax error reporting:
-
-```python
-class CustomErrorListener(ErrorListener):
-    def __init__(self):
-        self.errors = []
-
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        self.errors.append(f"Syntax error at line {line}:{column}: {msg}")
-```
-
-#### 3.4.3 Parse Tree Visualization
-The system provides parse tree visualization for educational purposes:
-
-```python
-def parse_tree_py(tree):
-    def _to_string_tree(tree, rule_names):
-        # Recursive tree traversal and formatting
-        if isinstance(tree, TerminalNode):
-            return tree.getText()
-        # ... formatting logic
-    return _to_string_tree(tree, parser.ruleNames)
-```
-
-## 4. System Features and Capabilities
-
-### 4.1 Core Translation Features
-
-#### 4.1.1 Bidirectional Code Conversion
-- **Python to Java**: Handles Python syntax including list comprehensions, range functions, and dynamic typing
-- **Java to Python**: Converts Java classes, static methods, and strong typing to Python equivalents
-- **Automatic Type Inference**: Intelligently determines appropriate types during translation
-
-#### 4.1.2 Advanced Language Construct Support
-- **Control Structures**: While loops, for loops, if-elif-else statements
-- **Function Definitions**: Method signatures, parameters, return statements
-- **Expression Evaluation**: Arithmetic, logical, and comparison operations
-- **Variable Assignments**: Type-aware variable declarations and assignments
-
-### 4.2 Interactive Features
-
-#### 4.2.1 Conversation Management
-- **Multi-Session Support**: Handle multiple translation conversations simultaneously
-- **Context Persistence**: Maintain conversation history and current code state
-- **Automatic Context Switching**: Seamlessly switch between different code translation sessions
-
-#### 4.2.2 Command Processing
-- **Natural Language Commands**: Process commands like "show tree", "save code", "translate python to java"
-- **Code Execution**: Run translated code directly within the system
-- **Grammar Tree Display**: Visualize parse trees for educational purposes
-
-### 4.3 Technical Achievements
-
-#### 4.3.1 Formal Language Theory Implementation
-- **Complete Lexical Analysis**: Comprehensive token recognition for both languages
-- **Context-Free Grammar Parsing**: Properly structured grammars with correct precedence
-- **Semantic Analysis**: Type inference and symbol resolution during translation
-- **Error Recovery**: Graceful handling of syntax errors with detailed reporting
-
-#### 4.3.2 Software Engineering Excellence
-- **Modular Architecture**: Clean separation between parsing, translation, and presentation layers
-- **RESTful API Design**: Standard HTTP interfaces for frontend-backend communication
-- **Responsive UI**: Modern React-based interface with real-time updates
-- **Persistent Storage**: Conversation and context management with browser localStorage
-
-## 5. Conclusion and Future Enhancements
-
-### 5.1 Project Accomplishments
-
-This bidirectional Java-Python translator successfully demonstrates the practical application of Programming Language Principles in solving real-world code translation challenges. The system achieves:
-
-1. **Comprehensive Grammar Implementation**: Full lexical and syntactic analysis for both languages
-2. **Semantic Translation**: Intelligent type inference and construct mapping
-3. **Interactive User Experience**: Chat-based interface with conversation management
-4. **Educational Value**: Parse tree visualization and grammar exploration capabilities
-5. **Technical Excellence**: Robust error handling and modular architecture
-
-### 5.2 PPL Concepts Demonstrated
-
-The project thoroughly applies fundamental PPL concepts:
-- **Lexical Analysis**: Token definition, recognition, and whitespace handling
-- **Syntax Analysis**: Context-free grammar design and parse tree generation
-- **Semantic Analysis**: Type checking, symbol table management, and scope resolution
-- **Language Translation**: Cross-language construct mapping and code generation
-- **Error Handling**: Syntax error detection and recovery mechanisms
-
-### 5.3 Future Enhancement Opportunities
-
-#### 5.3.1 Language Feature Expansion
-- **Object-Oriented Programming**: Class inheritance, polymorphism, and encapsulation
-- **Advanced Data Structures**: Arrays, lists, dictionaries, and custom objects
-- **Exception Handling**: Try-catch blocks and error propagation
-- **File I/O Operations**: Reading and writing files with proper resource management
-
-#### 5.3.2 Additional Programming Languages
-- **Multi-Language Support**: Extend to C++, JavaScript, or other popular languages
-- **Language-Agnostic Framework**: Develop a plugin architecture for easy language addition
-- **Cross-Platform Compatibility**: Support for different operating systems and environments
-
-#### 5.3.3 Advanced Features
-- **Code Optimization**: Implement optimization passes during translation
-- **Performance Analysis**: Measure and compare execution efficiency
-- **AI-Assisted Translation**: Integrate machine learning for improved translation accuracy
-- **Collaborative Development**: Multi-user support for team-based translation projects
-
-### 5.4 Educational Impact
-
-This project serves as an excellent demonstration of how theoretical computer science concepts translate into practical software solutions. Students and developers can:
-- Understand the relationship between formal grammars and real programming languages
-- Learn about compiler design principles through hands-on implementation
-- Explore the challenges of cross-language translation and semantic preservation
-- Gain experience with modern web development frameworks and API design
-
-The combination of rigorous theoretical foundation with practical implementation makes this project a valuable contribution to both computer science education and software development tooling. 
+## 5. Techniques for Each Component
+
+### 5.1 Frontend (User Interface)
+- **React.js**: Used for building a component-based, reactive UI.
+- **Vite**: Modern build tool for fast development and bundling.
+- **Tailwind CSS**: Utility-first CSS framework for responsive and themed (Light/Dark) styling.
+- **LocalStorage API**: Persists chat history and user preferences directly in the browser.
+
+### 5.2 Backend (Translation Engine)
+- **FastAPI**: High-performance web framework for building APIs with Python.
+- **ANTLR4**: Used to generate Lexers and Parsers from formal `.g4` grammar definitions.
+- **Python 3**: The core language for implementing visitor logic and tree manipulation.
+- **Subprocess Execution**: Used to run `javac` or `python` for the "show output" feature.
+
+### 5.3 Translation Logic
+- **Visitor Design Pattern**: Traverses the ANTLR-generated Parse Tree to perform source-to-source translation.
+- **Type Inference Engine**: Automatically detects variable types in Python to generate valid Java declarations.
+
+## 6. Application of Programming Language Principles (PPL)
+
+### 6.1 Lexical Analysis (Lexer Syntax)
+We defined comprehensive token sets for both languages to handle their unique lexical requirements:
+- **Tokenization**: Converting raw characters into meaningful symbols (keywords, identifiers, literals).
+- **Language-Specific Handling**:
+    - **Python**: Implemented newline (`NL`) sensitivity to respect indentation-based scoping.
+    - **Java**: Designed to skip whitespaces and newlines while focusing on brace-delimited blocks.
+
+### 6.2 Syntax Analysis (Grammar Syntax)
+We utilized **Context-Free Grammars (CFG)** to define the structural rules of both languages:
+- **Expression Hierarchy**: Implemented strict operator precedence (Multiplication > Addition > Logic) using recursive grammar rules.
+- **Left-Recursion Management**:
+    - Used ANTLR's direct left-recursion support for Java expressions.
+    - Utilized repetition operators (`*`, `+`) in Python grammars to ensure parsing efficiency.
+
+### 6.3 Semantic Analysis and Translation
+This phase bridges the gap between the two languages' semantics:
+- **Type Inference**: Since Python is dynamically typed, our translator analyzes the right-hand side of assignments (e.g., `x = 5` becomes `int x = 5;` in Java).
+- **Construct Mapping**:
+    - Mapping Python's `range(n)` to Java's `for (int i=0; i<n; i++)`.
+    - Mapping Java's `System.out.println()` to Python's `print()`.
+- **Symbol Table Management**: Implicitly handled during tree traversal to ensure variables are declared before use in Java.
+
+### 6.4 Intermediate Representation (Parse Trees)
+The system generates a **Parse Tree** as an intermediate step. This tree serves as the source of truth for:
+- **Translation**: Visitors extract data from nodes to build the target string.
+- **Visualization**: The tree is stringified and displayed to the user for educational analysis of the code structure.

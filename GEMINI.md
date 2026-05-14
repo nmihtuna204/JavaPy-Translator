@@ -1,66 +1,43 @@
 # JavaPy-Translator
 
 ## Project Overview
-This project is a bidirectional code translation framework that converts code between Java and Python using formal language theory principles. It features a React-based frontend providing a ChatGPT-like interactive interface, and a FastAPI-based backend that uses ANTLR4 grammars for parsing and translation. 
+JavaPy-Translator is a bidirectional code translator that converts Java to Python and vice versa. The project features a chat-style user interface where users can type code or natural language commands, with results streaming back in a conversation view. It uses ANTLR4 for parsing, a FastAPI backend for handling translations, and a React + Vite + Tailwind frontend for the user interface. It was created for a Principles of Programming Languages (PPL) course.
 
-Key Components:
-- **Backend**: FastAPI server, ANTLR4 grammars (`.g4` files) for Java and Python, and custom Visitor classes that parse abstract syntax trees (AST) to generate target code.
-- **Frontend**: React.js application using Vite and Tailwind CSS, communicating with the backend via RESTful APIs.
+### Main Technologies
+- **Backend:** Python (FastAPI, Uvicorn, Pydantic), ANTLR4 (with Java 8+ required for regenerating grammars or running Java code)
+- **Frontend:** React, Vite, Tailwind CSS
+
+### Architecture
+- **backend/**: Contains the FastAPI server (`server.py`) with a single `POST /convert` endpoint. Contains ANTLR grammars (`.g4`), translation logic (visitors), and a CLI tool (`run.py`) for code generation and testing.
+- **frontend/**: Contains a React application that persists multiple conversations in `localStorage` and communicates with the backend via `fetch` requests. 
 
 ## Building and Running
 
-### Prerequisites
-- Python 3.8+
-- Node.js 16+
-- Java JDK 8+ (required for regenerating ANTLR parsers)
+Two terminals are required to run this project: one for the backend and one for the frontend.
 
-### Backend Setup
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Install Python dependencies:
-   ```bash
-   pip install fastapi uvicorn antlr4-python3-runtime python-multipart
-   ```
-3. Start the FastAPI server:
-   ```bash
-   uvicorn server:app --reload
-   ```
-   The backend will run at `http://localhost:8000`.
+### Backend Setup & Execution
+1. Navigate to the `backend/` directory: `cd backend`
+2. Create and activate a Python virtual environment:
+   - macOS/Linux: `python3 -m venv .venv && source .venv/bin/activate`
+   - Windows: `python -m venv .venv` and `.venv\Scripts\activate`
+3. Install dependencies: `pip install -r requirements.txt`
+4. Start the server: `uvicorn server:app --reload`
+   - The backend runs on `http://localhost:8000`. Swagger docs are at `/docs`.
 
-### Frontend Setup
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install Node dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-   The frontend will run at `http://localhost:5173`.
+*Note: A Java JDK 8+ is required to execute translated Java code (via `javac` and `java`) or to regenerate ANTLR grammars.*
 
-### ANTLR Grammar Regeneration
-If you modify any of the `.g4` files in the `backend` directory, you need to regenerate the parsers:
-```bash
-cd backend
-antlr4 -Dlanguage=Python3 -visitor py2java.g4
-antlr4 -Dlanguage=Python3 -visitor java2py.g4
-antlr4 -Dlanguage=Python3 -visitor command.g4
-```
-*(Assumes `antlr4` alias is configured correctly on your system).*
+### Frontend Setup & Execution
+1. Navigate to the `frontend/` directory: `cd frontend`
+2. Install dependencies: `npm install`
+3. Start the development server: `npm run dev`
+   - The frontend runs on `http://localhost:5173`.
+
+### Regenerating Grammars & Testing (Backend)
+- To regenerate ANTLR parsers (requires Java JDK): `python run.py gen`
+- To run Python to Java tests: `python run.py test py`
 
 ## Development Conventions
-
-- **Grammar Changes**: The core parsing logic lives in the ANTLR `.g4` files. Any language feature additions or syntax changes must start here.
-- **Translation Logic**: The Visitor Pattern is used to traverse the AST. Translation logic is implemented in `backend/py2javaVisitor.py`, `backend/java2pyVisitor.py`, and `backend/commandVisitor.py`. Type inference and symbol management are handled within these visitors.
-- **Frontend Architecture**: Built using React functional components and hooks (`useState`, `useEffect`). UI styling uses Tailwind CSS. API interactions are modularized in `frontend/src/services/api.js`.
-- **Command Processing**: A dedicated ANTLR grammar (`command.g4`) allows natural language commands in the chat interface like "show tree" or "translate python to java".
-
-## Testing
-- **Backend Testing**: `python -m pytest tests/` inside the `backend/` directory.
-- **Frontend Testing**: `npm test` inside the `frontend/` directory.
+- The application uses `localStorage` in the browser to maintain separate chat sessions.
+- The UI handles switching between code editing and chat commands. Chat commands like `translate python to java`, `show grammar`, and `show output` act as control instructions for the backend.
+- The grammar configurations reside in `backend/grammars/`, and visitor logic implementation resides in `backend/logic/`. Ensure any modifications to `.g4` files are followed by parser regeneration.
+- Do not commit changes to `.venv` or `node_modules` folders. Keep UI changes within the component-based architecture described in `frontend/src/`.

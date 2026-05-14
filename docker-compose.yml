@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount the backend directory to allow live-reloading if we pass --reload
+      - ./backend:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Uncomment the following line if you want uvicorn to reload on code changes
+    # command: uvicorn server:app --host 0.0.0.0 --port 8000 --reload

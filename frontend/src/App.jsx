@@ -200,64 +200,34 @@ function App() {
     try {
       // Call the API with conversation ID
       const response = await convertCode(inputMessage, activeConversationId)
-      
-      // Check for language mismatch error
-      if (response.result && typeof response.result === 'object' && response.result.error) {
-        if (response.result.type === 'language_mismatch') {
-          // Show language mismatch as chat message instead of alert
-          setConversations(prev => prev.map(conv => {
-            if (conv.id === activeConversationId) {
-              const updatedMessages = conv.messages.map(msg => 
-                msg.id === tempId ? { ...msg, status: 'delivered' } : msg
-              )
-              
-              const alertMessage = {
-                id: tempId + 1,
-                text: `⚠️ ${response.result.error}`,
-                sender: 'bot',
-                timestamp: new Date().toISOString(),
-                isError: true,
-                type: 'language_mismatch'
-              }
-              
-              return {
-                ...conv,
-                messages: [...updatedMessages, alertMessage]
-              }
-            }
-            return conv
-          }))
-          setIsLoading(false)
-          return
-        }
-      }
-      
+
       // Update the conversation with both messages
       setConversations(prev => prev.map(conv => {
         if (conv.id === activeConversationId) {
           // Update user message status and add bot response
-          const updatedMessages = conv.messages.map(msg => 
+          const updatedMessages = conv.messages.map(msg =>
             msg.id === tempId ? { ...msg, status: 'delivered' } : msg
           )
-          
+
           const botMessage = {
-          id: tempId + 1,
+            id: tempId + 1,
             text: formatBotResponse(response),
-          sender: 'bot',
+            sender: 'bot',
             timestamp: new Date().toISOString(),
-            type: response.type
+            type: response.type,
+            isError: response.type === 'error'
           }
-          
+
           // Update conversation direction if included in response
           const updatedConv = {
             ...conv,
             messages: [...updatedMessages, botMessage]
           }
-          
+
           if (response.direction) {
             updatedConv.direction = response.direction
           }
-          
+
           return updatedConv
         }
         return conv
@@ -289,7 +259,7 @@ function App() {
 
   const formatBotResponse = (response) => {
     const { result, type, message } = response
-    
+
     switch (type) {
       case 'converted_code':
         return message ? `${message}\n\n${result}` : result
@@ -298,11 +268,13 @@ function App() {
       case 'output':
         return message ? `${message}\n\n${result}` : `Output:\n\n${result}`
       case 'message':
-        return result
+        return message ? `${message}\n\n${result}` : result
       case 'code':
         return message ? `${message}\n\n${result}` : `Saved Code:\n\n${result}`
-      default:
+      case 'error':
         return result
+      default:
+        return result || 'Processing complete'
     }
   }
 
@@ -314,59 +286,73 @@ function App() {
   }
 
   return (
-    <div className="chat-container flex h-screen w-screen">
-      {/* Sidebar */}
-      <Sidebar
-        conversations={conversations}
-        activeConversationId={activeConversationId}
-        onSelectConversation={handleSelectConversation}
-        onNewChat={handleNewChat}
-        onDeleteConversation={handleDeleteConversation}
-      />
+    <div className="chat-container flex flex-col h-screen w-screen">
+      {/* Top Navigation Bar */}
+      <nav className="nav-top">
+        <div className="nav-container">
+          <div className="nav-left">
+            <div className="nav-title">Code Converter</div>
+            <button onClick={handleNewChat} className="btn-new-chat">
+              + New Chat
+            </button>
+          </div>
+          <div className="nav-right">
+            <ThemeToggle />
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span className="text-sm">Online</span>
+          </div>
+        </div>
+      </nav>
+
+      {/* Horizontal Conversations Scroll */}
+      <div className="conversations-scroll">
+        <Sidebar
+          conversations={conversations}
+          activeConversationId={activeConversationId}
+          onSelectConversation={handleSelectConversation}
+          onNewChat={handleNewChat}
+          onDeleteConversation={handleDeleteConversation}
+        />
+      </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col w-[75%] max-w-full">
+      <div className="flex-1 flex flex-col w-full max-w-full overflow-hidden">
       {/* Header */}
         <header className="header-modern">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold">
                 {activeConversation?.title || 'New Conversation'}
-              </h1>
+              </h2>
               {activeConversation?.lastCode && (
-                <div className="text-sm text-muted mt-1">
-                  Context: {activeConversation.direction === 'pytojava' ? 'Python → Java' : 'Java → Python'} 
+                <div className="text-xs text-muted mt-1">
+                  Context: {activeConversation.direction === 'pytojava' ? 'Python → Java' : 'Java → Python'}
                   {activeConversation.lastLanguage && ` (${activeConversation.lastLanguage})`}
                 </div>
               )}
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted">
-              <ThemeToggle />
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              Online
             </div>
           </div>
       </header>
 
       {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 smooth-scroll">
+        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4 smooth-scroll">
           {messages.length === 0 && (
             <div className="flex items-center justify-center h-full">
               <div className="text-center max-w-md">
-                <div className="text-gradient text-2xl font-bold mb-4">
+                <div className="text-gradient text-3xl font-bold mb-4">
                   Welcome to Code Converter
                 </div>
-                <p className="text-muted mb-6">
+                <p className="text-muted mb-8">
                   Transform your code between Python and Java instantly. Each conversation remembers its own context.
                 </p>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="bg-secondary p-4 rounded-lg">
-                    <div className="font-medium mb-2">🧠 Context Memory</div>
-                    <div className="text-muted">Each conversation remembers its code</div>
+                <div className="grid grid-cols-1 gap-3 text-sm">
+                  <div className="message-info">
+                    <div className="font-semibold mb-1">💡 Smart Conversion</div>
+                    <div className="text-xs text-muted">Translate code and view parse trees</div>
                   </div>
-                  <div className="bg-secondary p-4 rounded-lg">
-                    <div className="font-medium mb-2">🚀 Smart Commands</div>
-                    <div className="text-muted">Try "show grammar", "show output"</div>
+                  <div className="message-info">
+                    <div className="font-semibold mb-1">📝 Commands</div>
+                    <div className="text-xs text-muted">Use "show grammar", "show output"</div>
                   </div>
                 </div>
               </div>
@@ -390,22 +376,20 @@ function App() {
                 <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed">
                   {message.text}
                 </div>
-                <div className={`mt-3 pt-3 border-t ${
-                  message.sender === 'user' 
-                    ? 'text-white/70 border-white/20 text-xs opacity-80' 
-                    : 'text-timestamp border-gray-200/40'
+                <div className={`mt-2 pt-2 text-xs opacity-70 ${
+                  message.sender === 'user'
+                    ? 'text-white/60'
+                    : 'text-muted'
                 }`}>
-                  {new Date(message.timestamp).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                  {new Date(message.timestamp).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
                   })}
-                {message.status && <span> · {message.status}</span>}
-                  {message.type && <span> · {message.type}</span>}
                 </div>
             </div>
           </div>
         ))}
-        
+
         {/* Loading indicator */}
         {isLoading && (
           <div className="flex justify-start">
@@ -415,37 +399,37 @@ function App() {
                   <div className="loading-dot"></div>
                   <div className="loading-dot"></div>
                 </div>
-                <div className="text-muted text-sm mt-2">Processing with conversation context...</div>
+                <div className="text-muted text-xs mt-2">Processing...</div>
             </div>
           </div>
         )}
-        
+
         <div ref={chatEndRef} />
       </div>
 
       {/* Input Area */}
-        <div className="p-6 border-divider border-t backdrop-blur">
-          <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto">
-            <div className="flex gap-4 items-end">
+        <div className="input-area">
+          <form onSubmit={handleSendMessage}>
+            <div className="input-wrapper">
           <textarea
             value={inputMessage}
                 onChange={handleInputChange}
             onKeyDown={handleKeyPress}
-                placeholder="Enter code or commands like 'show grammar', 'show output', 'translate python to java'..."
+                placeholder="Enter code or ask a question..."
                 className="input-modern flex-1 resize-none"
                 disabled={isLoading}
                 ref={inputRef}
-                style={{ 
-                  minHeight: '56px',
-                  maxHeight: '140px', // 5 lines approx
-                  height: '56px',
+                style={{
+                  minHeight: '48px',
+                  maxHeight: '120px',
+                  height: '48px',
                   overflowY: 'hidden'
                 }}
           />
           <button
             type="submit"
             disabled={isLoading || !inputMessage.trim()}
-                className={`btn-primary px-6 py-3 h-14 ${
+                className={`btn-send ${
               inputMessage.trim() && !isLoading
                     ? 'glow-accent-hover'
                     : 'opacity-50 cursor-not-allowed'
@@ -453,13 +437,13 @@ function App() {
           >
             {isLoading ? (
                   <div className="loading-dots">
-                    <div className="loading-dot bg-white"></div>
-                    <div className="loading-dot bg-white"></div>
-                    <div className="loading-dot bg-white"></div>
+                    <div className="loading-dot"></div>
+                    <div className="loading-dot"></div>
+                    <div className="loading-dot"></div>
                   </div>
             ) : (
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
               </svg>
             )}
           </button>

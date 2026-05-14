@@ -1,4 +1,4 @@
-# Generated from command.g4 by ANTLR 4.9.2
+# Generated from /Users/blake/Documents/ppl/JavaPy-Translator/backend/grammars/command.g4 by ANTLR 4.9.2
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .commandParser import commandParser

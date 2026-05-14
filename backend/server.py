@@ -7,13 +7,13 @@ from CompiledFiles.java2pyLexer import java2pyLexer
 from CompiledFiles.java2pyParser import java2pyParser
 from antlr4.error.ErrorListener import ErrorListener
 from fastapi.middleware.cors import CORSMiddleware
-from py2javaVisitor import py2javaVisitor
-from java2pyVisitor import java2pyVisitor
-from tree_printer_py import parse_tree_py
-from tree_printer_java import parse_tree_java
+from logic.py2javaVisitor import py2javaVisitor
+from logic.java2pyVisitor import java2pyVisitor
+from logic.tree_printer_py import parse_tree_py
+from logic.tree_printer_java import parse_tree_java
 from CompiledFiles.commandLexer import commandLexer
 from CompiledFiles.commandParser import commandParser
-from commandVisitor import commandVisitor
+from logic.commandVisitor import commandVisitor
 import json
 import os
 from typing import Optional
@@ -28,9 +28,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Conversation context storage
+# Conversation context storage (In-memory only)
 conversation_contexts = {}
-CONTEXTS_FILE = "conversation_contexts.json"
 
 class CodeInput(BaseModel):
     code: str
@@ -42,25 +41,6 @@ class CustomErrorListener(ErrorListener):
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         self.errors.append(f"Syntax error at line {line}:{column}: {msg}")
-
-def load_conversation_contexts():
-    """Load conversation contexts from file"""
-    global conversation_contexts
-    try:
-        if os.path.exists(CONTEXTS_FILE):
-            with open(CONTEXTS_FILE, 'r') as f:
-                conversation_contexts = json.load(f)
-    except Exception as e:
-        print(f"Error loading contexts: {e}")
-        conversation_contexts = {}
-
-def save_conversation_contexts():
-    """Save conversation contexts to file"""
-    try:
-        with open(CONTEXTS_FILE, 'w') as f:
-            json.dump(conversation_contexts, f, indent=2)
-    except Exception as e:
-        print(f"Error saving contexts: {e}")
 
 def get_conversation_context(conversation_id):
     """Get or create conversation context"""
@@ -79,20 +59,17 @@ def set_conversation_context(conversation_id, code, tree):
     context = get_conversation_context(conversation_id)
     context["last_code"] = code
     context["last_tree"] = tree
-    save_conversation_contexts()
 
 def set_conversation_direction(conversation_id, direction):
     """Set conversion direction for a conversation"""
     context = get_conversation_context(conversation_id)
     context["direction"] = direction
-    save_conversation_contexts()
 
 def save_conversation_code(conversation_id):
     """Save current code for a conversation"""
     context = get_conversation_context(conversation_id)
     context["saved_code"] = context["last_code"]
     context["saved_tree"] = context["last_tree"]
-    save_conversation_contexts()
 
 def get_conversation_saved_code(conversation_id):
     """Get saved code for a conversation and set it as current context"""
@@ -104,7 +81,6 @@ def get_conversation_saved_code(conversation_id):
         # Set the saved code as the current context so subsequent commands work on it
         context["last_code"] = saved_code
         context["last_tree"] = saved_tree
-        save_conversation_contexts()
     
     return saved_code
 
@@ -295,7 +271,19 @@ def handle_conversation_code(conversation_id, code):
     """Handle code conversion for a specific conversation"""
     context = get_conversation_context(conversation_id)
     direction = context["direction"]
-    
+
+    # If no direction is set, auto-detect from code language
+    if direction is None:
+        detected = detect_code_language(code)
+        if detected == "python":
+            direction = "pytojava"
+            set_conversation_direction(conversation_id, direction)
+        elif detected == "java":
+            direction = "javatopy"
+            set_conversation_direction(conversation_id, direction)
+        else:
+            return {"error": "Could not detect code language. Please specify 'translate python to java' or 'translate java to python'"}
+
     # Validate code language matches direction
     validation = validate_code_direction(code, direction)
     if not validation["valid"]:
@@ -303,26 +291,26 @@ def handle_conversation_code(conversation_id, code):
             "error": validation["message"],
             "type": "language_mismatch"
         }
-    
+
     try:
         if direction == "pytojava":
             # Python to Java conversion
             input_stream = InputStream(code)
             lexer = py2javaLexer(input_stream)
             token_stream = CommonTokenStream(lexer)
-            
+
             parser = py2javaParser(token_stream)
             parser.removeErrorListeners()
             error_listener = CustomErrorListener()
             parser.addErrorListener(error_listener)
             tree = parser.program()
-            
+
             if error_listener.errors:
-                return {"error": error_listener.errors}
-            
+                return {"error": "Parse error: " + str(error_listener.errors)}
+
             # Store the tree and code for this conversation
             set_conversation_context(conversation_id, code, tree)
-            
+
             # Convert to Java
             visitor = py2javaVisitor()
             java_code = visitor.visit(tree)
@@ -332,29 +320,28 @@ def handle_conversation_code(conversation_id, code):
             input_stream = InputStream(code)
             lexer = java2pyLexer(input_stream)
             token_stream = CommonTokenStream(lexer)
-            
+
             parser = java2pyParser(token_stream)
             parser.removeErrorListeners()
             error_listener = CustomErrorListener()
             parser.addErrorListener(error_listener)
             tree = parser.program()
-            
+
             if error_listener.errors:
-                return {"error": error_listener.errors}
-            
+                return {"error": "Parse error: " + str(error_listener.errors)}
+
             # Store the tree and code for this conversation
             set_conversation_context(conversation_id, code, tree)
-            
+
             # Convert to Python
             visitor = java2pyVisitor()
             python_code = visitor.visit(tree)
             return python_code
-        
-    except Exception as e:
-        return {"error": str(e)}
+        else:
+            return {"error": "Invalid direction. Please use 'translate python to java' or 'translate java to python'"}
 
-# Load contexts on startup
-load_conversation_contexts()
+    except Exception as e:
+        return {"error": "Conversion error: " + str(e)}
 
 def response_message(result):
     if result == "0":
@@ -431,10 +418,18 @@ async def convert_code(input_data: CodeInput):
         # If it's not a valid command and we have a direction set, try code conversion
         if result == "0":
             converted_code = handle_conversation_code(conversation_id, input_data.code)
-            
+
+            # Check if conversion returned an error
+            if isinstance(converted_code, dict) and "error" in converted_code:
+                return {
+                    "result": converted_code["error"],
+                    "type": "message",
+                    "conversation_id": conversation_id
+                }
+
             return {
                 "result": converted_code,
-                "type": "converted_code", 
+                "type": "converted_code",
                 "message": response_message(result),
                 "conversation_id": conversation_id
             }
@@ -501,9 +496,19 @@ async def convert_code(input_data: CodeInput):
             
         # Try code conversion as fallback
         converted_code = handle_conversation_code(conversation_id, input_data.code)
+
+        # Check if conversion returned an error
+        if isinstance(converted_code, dict) and "error" in converted_code:
+            return {
+                "result": converted_code["error"],
+                "type": "message",
+                "conversation_id": conversation_id
+            }
+
         return {
             "result": converted_code,
-            "type": "converted_code", 
+            "type": "converted_code",
+            "message": "Operation completed successfully",
             "conversation_id": conversation_id
         }
         
@@ -521,3 +526,7 @@ async def get_conversation_info(conversation_id: str):
         "direction": context["direction"],
         "last_code_preview": context["last_code"][:100] + "..." if context["last_code"] and len(context["last_code"]) > 100 else context["last_code"]
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

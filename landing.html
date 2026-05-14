@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaPy-Translator | PPL Presentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        .gradient-text {
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .code-block {
+            background: #1a1b26 !important;
+            border-radius: 10px !important;
+            border: 1px solid #3b4261 !important;
+            font-size: 0.78rem !important;
+            line-height: 1.6 !important;
+        }
+        section { scroll-margin-top: 5rem; }
+        .member-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+        .member-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(99, 102, 241, 0.6);
+        }
+        .nav-link { transition: color 0.2s; }
+        .nav-link:hover { color: #818cf8; }
+        .nav-link.active { color: #22d3ee; font-weight: 700; border-bottom: 2px solid #22d3ee; }
+        .arrow-right {
+            display: inline-flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 50%; width: 2rem; height: 2rem;
+            font-size: 1rem; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; }
+    </style>
+</head>
+<body class="bg-slate-900 text-white font-sans selection:bg-indigo-500/30">
+
+    <!-- NAV -->
+    <nav class="fixed top-0 w-full bg-slate-900/80 backdrop-blur-md z-50 border-b border-slate-800">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <span class="font-bold text-xl gradient-text">JavaPy-Translator</span>
+            <div class="flex gap-6 text-sm font-medium text-slate-400">
+                <a href="#team"    class="nav-link">Team &amp; Vision</a>
+                <a href="#grammar" class="nav-link">Grammar Design</a>
+                <a href="#logic"   class="nav-link">Mapping Logic</a>
+                <a href="#demo"    class="nav-link">Live Demo</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-6 pt-24 pb-16">
+
+        <!-- ═══════════════════════════════════════════════════
+             SECTION 1 — TEAM & VISION
+        ════════════════════════════════════════════════════ -->
+        <section id="team" class="mb-28">
+            <header class="text-center mb-16">
+                <p class="text-slate-500 text-sm uppercase tracking-widest mb-3">Principles of Programming Languages · ITC 2026</p>
+                <h1 class="text-6xl font-extrabold mb-4 gradient-text">JavaPy-Translator</h1>
+                <p class="text-xl text-slate-400 mb-4">A Formal Language Framework for Bidirectional Java ↔ Python Translation</p>
+                <p class="text-slate-500 max-w-2xl mx-auto text-sm leading-relaxed">
+                    Built on ANTLR4 Context-Free Grammars, a FastAPI backend, and a React chat interface.
+                    Each chat session is a stateful compilation unit with its own parse tree, direction, and saved code.
+                </p>
+            </header>
+
+            <!-- Team cards -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                <div class="member-card p-6 rounded-2xl">
+                    <span class="tag bg-indigo-500/20 text-indigo-400 mb-3 block">Team Lead</span>
+                    <h4 class="font-bold text-indigo-400 text-lg">Lê Hưng</h4>
+                    <p class="text-xs text-slate-500 mb-3">ITCSIU222271</p>
+                    <p class="text-sm text-slate-300 leading-relaxed">Backend architect · FastAPI pipeline · Conversation state model · Docker orchestration</p>
+                </div>
+                <div class="member-card p-6 rounded-2xl">
+                    <span class="tag bg-purple-500/20 text-purple-400 mb-3 block">Frontend Dev</span>
+                    <h4 class="font-bold text-purple-400 text-lg">Lê Nhật Anh</h4>
+                    <p class="text-xs text-slate-500 mb-3">ITCSIU22254</p>
+                    <p class="text-sm text-slate-300 leading-relaxed">React 18 + Vite · Chat UI · localStorage persistence · Multi-conversation state</p>
+                </div>
+                <div class="member-card p-6 rounded-2xl">
+                    <span class="tag bg-pink-500/20 text-pink-400 mb-3 block">Logic Engineer</span>
+                    <h4 class="font-bold text-pink-400 text-lg">Nguyễn Minh Tuấn</h4>
+                    <p class="text-xs text-slate-500 mb-3">ITCSIU22298</p>
+                    <p class="text-sm text-slate-300 leading-relaxed">Visitor pattern · Type inference engine · Loop & control-flow translation</p>
+                </div>
+                <div class="member-card p-6 rounded-2xl border-cyan-500/40">
+                    <span class="tag bg-cyan-500/20 text-cyan-400 mb-3 block">Grammar Architect</span>
+                    <h4 class="font-bold text-cyan-400 text-lg">Nguyễn Minh Phúc</h4>
+                    <p class="text-xs text-slate-500 mb-3">ITCSIU22225</p>
+                    <p class="text-sm text-slate-300 leading-relaxed">3 ANTLR4 CFGs · Indentation lexing · Operator precedence · Command DSL</p>
+                </div>
+            </div>
+
+            <!-- Pipeline overview -->
+            <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-8">
+                <h3 class="text-center text-lg font-bold text-slate-300 mb-6">End-to-End Request Pipeline</h3>
+                <div class="flex flex-wrap items-center justify-center gap-3 text-sm">
+                    <div class="bg-slate-700/60 rounded-xl px-5 py-3 text-center">
+                        <div class="text-indigo-400 font-bold mb-1">1. Input</div>
+                        <div class="text-slate-400 text-xs">Code or command<br/>via chat UI</div>
+                    </div>
+                    <div class="arrow-right">→</div>
+                    <div class="bg-slate-700/60 rounded-xl px-5 py-3 text-center">
+                        <div class="text-cyan-400 font-bold mb-1">2. Command DSL</div>
+                        <div class="text-slate-400 text-xs">command.g4 parser<br/>tries first</div>
+                    </div>
+                    <div class="arrow-right">→</div>
+                    <div class="bg-slate-700/60 rounded-xl px-5 py-3 text-center">
+                        <div class="text-cyan-400 font-bold mb-1">3. Lexer + Parser</div>
+                        <div class="text-slate-400 text-xs">py2java.g4 or<br/>java2py.g4</div>
+                    </div>
+                    <div class="arrow-right">→</div>
+                    <div class="bg-slate-700/60 rounded-xl px-5 py-3 text-center">
+                        <div class="text-pink-400 font-bold mb-1">4. Visitor</div>
+                        <div class="text-slate-400 text-xs">CST walk →<br/>target language</div>
+                    </div>
+                    <div class="arrow-right">→</div>
+                    <div class="bg-slate-700/60 rounded-xl px-5 py-3 text-center">
+                        <div class="text-green-400 font-bold mb-1">5. Response</div>
+                        <div class="text-slate-400 text-xs">Code / tree /<br/>exec output</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════
+             SECTION 2 — GRAMMAR DESIGN
+        ════════════════════════════════════════════════════ -->
+        <section id="grammar" class="mb-28">
+            <div class="text-center mb-12">
+                <span class="tag bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 mb-4 block w-fit mx-auto">Nguyễn Minh Phúc — Grammar Architect</span>
+                <h2 class="text-5xl font-bold mb-3">Grammar Architecture</h2>
+                <p class="text-slate-400">Three ANTLR4 Context-Free Grammars powering the translator</p>
+            </div>
+
+            <!-- Row 1: Structural asymmetry -->
+            <div class="grid lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-lg font-bold mb-1 text-cyan-400">① Structural Asymmetry</h3>
+                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                        Java uses braces for blocks; Python uses indentation. The Java grammar skips whitespace entirely
+                        (<code class="text-cyan-300">NL → skip</code>). The Python grammar must <em>capture</em> newlines
+                        and the leading spaces that follow them — this is how the parser knows a new indented block began.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs text-slate-500 uppercase tracking-wide mb-2">java2py.g4 — whitespace-agnostic</p>
+                            <pre class="code-block p-4"><code class="language-antlr">program: classDef EOF;
+classDef:
+  PUBLIC CLASS ID
+  '{' classBody '}';
+classBody: methodDef*;
+methodDef:
+  PUBLIC STATIC javaType
+  ID '(' param? ')' block;
+block: '{' stmt* '}';
+
+// whitespace discarded
+NL: ('\r'? '\n' [ \t]*) -> skip;
+WS: [ \t]+ -> skip;</code></pre>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 uppercase tracking-wide mb-2">py2java.g4 — indentation preserved</p>
+                            <pre class="code-block p-4"><code class="language-antlr">program: (stmt | NL)+ EOF;
+stmt: ifStmt
+    | whileStmt
+    | forStmt
+    | funcStmt
+    | asg | printStmt
+    | returnStmt | ...;
+block: NL stmt+; // indent = scope
+
+// newline + spaces = token
+NL: ('\r'? '\n' [ \t]*);
+WS: [ \t]+ -> skip;</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-lg font-bold mb-1 text-cyan-400">② Operator Precedence via Rule Nesting</h3>
+                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                        No explicit precedence directives are needed. Precedence emerges structurally: lower-priority operators
+                        (<code class="text-cyan-300">and/or</code>) live at the top of the hierarchy; higher-priority
+                        operators (<code class="text-cyan-300">*/</code>) are nested deeper, so they are reduced first by
+                        the LL(*) parser.
+                    </p>
+                    <pre class="code-block p-4"><code class="language-antlr">// Identical hierarchy in both grammars
+exp      : logicExp;
+logicExp : compExp (op=('and'|'or') compExp)*;
+compExp  : addExp  (op=('>'|'<'|'=='|'!=') addExp)*;
+addExp   : mulExp  (op=('+'|'-') mulExp)*;
+mulExp   : unaryExp (op=('*'|'/') unaryExp)*;
+unaryExp : op=('not'|'-') unaryExp | atom;
+atom     : NUMBER | FLOAT | STRING
+         | TRUE | FALSE | NONE
+         | ID '(' (exp (',' exp)*)? ')'
+         | ID | '(' exp ')';</code></pre>
+                    <div class="mt-4 p-3 bg-cyan-500/10 rounded-xl border border-cyan-500/20 text-xs text-slate-300">
+                        <span class="text-cyan-400 font-bold">PPL insight:</span> Rule depth encodes precedence. <code>mulExp</code> is deeper than <code>addExp</code>, so <code>2 + 3 * 4</code> parses as <code>2 + (3 * 4)</code> automatically.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Command DSL + For-loop grammar -->
+            <div class="grid lg:grid-cols-2 gap-6">
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-lg font-bold mb-1 text-cyan-400">③ Command DSL Grammar</h3>
+                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                        A third grammar (<code class="text-cyan-300">command.g4</code>) recognises natural-language chat
+                        commands. Every request is tried against this grammar first. If the visitor returns
+                        <code class="text-cyan-300">"0"</code> it's not a command, so the server routes it to the code
+                        translator instead.
+                    </p>
+                    <pre class="code-block p-4"><code class="language-antlr">// command.g4
+program : command+ EOF;
+command : verb noun* target? | non_command;
+verb    : 'show'|'save'|'store'
+        | 'translate'|'retrieve'|'get';
+target  : source TO target_lang;
+source  : PYTHON | JAVA;
+target_lang: PYTHON | JAVA;
+
+TO:     'to';
+PYTHON: 'python';
+JAVA:   'java';
+ID:     [a-zA-Z_][a-zA-Z0-9_]*;
+WS:     [ \t\r\n]+ -> skip;</code></pre>
+                    <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                        <div class="bg-slate-900/60 rounded-lg p-2">
+                            <span class="text-slate-500">Input →</span> <code class="text-green-400">"translate python to java"</code>
+                            <div class="text-indigo-400 mt-1">returns <code>"pytojava"</code></div>
+                        </div>
+                        <div class="bg-slate-900/60 rounded-lg p-2">
+                            <span class="text-slate-500">Input →</span> <code class="text-green-400">"show grammar"</code>
+                            <div class="text-indigo-400 mt-1">returns <code>"showgrammar"</code></div>
+                        </div>
+                        <div class="bg-slate-900/60 rounded-lg p-2">
+                            <span class="text-slate-500">Input →</span> <code class="text-green-400">"save code"</code>
+                            <div class="text-indigo-400 mt-1">returns <code>"savecode"</code></div>
+                        </div>
+                        <div class="bg-slate-900/60 rounded-lg p-2">
+                            <span class="text-slate-500">Input →</span> <code class="text-green-400">"show output"</code>
+                            <div class="text-indigo-400 mt-1">returns <code>"showoutput"</code></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-lg font-bold mb-1 text-cyan-400">④ Loop Grammar — Asymmetric Translation</h3>
+                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                        Python's <code class="text-cyan-300">range()</code> and Java's triple-header <code class="text-cyan-300">for</code> are structurally different. The grammars capture this asymmetry explicitly, letting the visitor produce the correct idiom in each direction.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs text-slate-500 uppercase mb-2">py2java — range rule</p>
+                            <pre class="code-block p-3"><code class="language-antlr">forStmt:
+  FOR ID IN
+  rangeExp COLON block;
+
+rangeExp:
+  RANGE '('
+    exp
+    (',' exp
+      (',' exp)?)?
+  ')';</code></pre>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 uppercase mb-2">java2py — C-style for</p>
+                            <pre class="code-block p-3"><code class="language-antlr">forStmt:
+  FOR '('
+    javaType ID '=' exp ';'
+    exp ';'
+    postfixStmt
+  ')' block;
+
+// No range equivalent —
+// visitor emits while loop</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════
+             SECTION 3 — MAPPING LOGIC
+        ════════════════════════════════════════════════════ -->
+        <section id="logic" class="mb-28">
+            <div class="text-center mb-12">
+                <span class="tag bg-pink-500/10 text-pink-400 border border-pink-500/30 mb-4 block w-fit mx-auto">Nguyễn Minh Tuấn — Logic Engineer</span>
+                <h2 class="text-5xl font-bold mb-3">Visitor Pattern &amp; Type Inference</h2>
+                <p class="text-slate-400">Walking the Concrete Syntax Tree to emit the target language</p>
+            </div>
+
+            <!-- Visitor architecture -->
+            <div class="grid lg:grid-cols-3 gap-6 mb-6">
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-lg font-bold mb-3 text-pink-400">Why Visitor Pattern?</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed mb-4">
+                        The Visitor pattern decouples translation logic from grammar structure. Each <code class="text-pink-300">visitX</code> method handles exactly one grammar rule in isolation — adding a new construct means adding a new method, not touching existing ones.
+                    </p>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex items-start gap-2">
+                            <span class="text-pink-400 mt-0.5">▸</span>
+                            <span class="text-slate-300"><code class="text-pink-300">visitProgram</code> — collects all top-level statements</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-pink-400 mt-0.5">▸</span>
+                            <span class="text-slate-300"><code class="text-pink-300">visitStmt</code> — dispatches to the right sub-visitor</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-pink-400 mt-0.5">▸</span>
+                            <span class="text-slate-300"><code class="text-pink-300">visitIfStmt / visitForStmt / ...</code> — emit target syntax</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-pink-400 mt-0.5">▸</span>
+                            <span class="text-slate-300"><code class="text-pink-300">visitAtom</code> — handles literals, identifiers, calls</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-lg font-bold mb-3 text-pink-400">Type Inference Engine</h3>
+                    <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+                        Python→Java requires inferring a static type for every assignment. <code class="text-pink-300">inferType()</code> walks the expression subtree bottom-up — no separate analysis pass.
+                    </p>
+                    <pre class="code-block p-4"><code class="language-python"># py2javaVisitor.py
+def inferType(self, ctx):
+    if isinstance(ctx, AtomContext):
+        if ctx.STRING(): return "String"
+        if ctx.FLOAT():  return "double"
+        if ctx.TRUE() or ctx.FALSE():
+                         return "boolean"
+        if ctx.NONE():   return "Object"
+        if ctx.NUMBER(): return "int"
+    if isinstance(ctx, LogicExpContext):
+        if ctx.op:       return "boolean"
+    if isinstance(ctx, CompExpContext):
+        if ctx.op:       return "boolean"
+    # recurse into sub-expression ...
+    return "int"  # default fallback</code></pre>
+                </div>
+
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-lg font-bold mb-3 text-pink-400">Indentation Tracking (Java→Python)</h3>
+                    <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+                        Python requires syntactically correct indentation. The Java→Python visitor maintains an <code class="text-pink-300">indent_level</code> counter — incremented on block entry, decremented on exit — so emitted Python is structurally valid, not post-processed.
+                    </p>
+                    <pre class="code-block p-4"><code class="language-python"># java2pyVisitor.py
+class java2pyVisitor:
+    def __init__(self):
+        self.indent_level = 0
+
+    def indent(self):
+        return "    " * self.indent_level
+
+    def visitWhileStmt(self, ctx):
+        cond = self.visit(ctx.exp())
+        self.indent_level += 1
+        body = self.visit(ctx.block())
+        self.indent_level -= 1
+        return (f"{self.indent()}while {cond}:\n"
+                f"{body}")</code></pre>
+                </div>
+            </div>
+
+            <!-- Loop translation example -->
+            <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 mb-6">
+                <h3 class="text-lg font-bold mb-4 text-pink-400">Loop Translation — Both Directions</h3>
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-3">Python → Java  (<code>range</code> → triple-header <code>for</code>)</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-green-400 mb-1">Input (Python)</p>
+                                <pre class="code-block p-3"><code class="language-python">for i in range(1, 6):
+    print(i)</code></pre>
+                            </div>
+                            <div>
+                                <p class="text-xs text-indigo-400 mb-1">Output (Java)</p>
+                                <pre class="code-block p-3"><code class="language-java">for (int i = 1; i &lt; 6; i++) {
+    System.out.println(i);
+}</code></pre>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-3 leading-relaxed">
+                            <code class="text-pink-300">visitRangeExp</code> unpacks the 1–3 arguments of <code>range()</code> and emits the correct init/condition/update triplet.
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-3">Java → Python  (C-style <code>for</code> → <code>while</code>)</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-green-400 mb-1">Input (Java)</p>
+                                <pre class="code-block p-3"><code class="language-java">for (int i=0; i&lt;5; i++) {
+    System.out.println(i);
+}</code></pre>
+                            </div>
+                            <div>
+                                <p class="text-xs text-indigo-400 mb-1">Output (Python)</p>
+                                <pre class="code-block p-3"><code class="language-python"># Converted from Java for loop
+i = 0
+while i &lt; 5:
+    print(i)
+    i += 1</code></pre>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-3 leading-relaxed">
+                            Python has no direct equivalent of C-style <code>for</code>, so the visitor decomposes it into init + <code>while</code> + trailing increment.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full translation example -->
+            <div class="bg-slate-800/50 p-6 rounded-2xl border border-indigo-500/30">
+                <h3 class="text-lg font-bold mb-4 text-indigo-400">Full Translation Example — Python → Java</h3>
+                <div class="grid lg:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-xs text-green-400 uppercase tracking-wide mb-2">Input — Python</p>
+                        <pre class="code-block p-4"><code class="language-python">def factorial(n):
+    if n <= 1:
+        return 1
+    return n * factorial(n - 1)
+
+if __name__ == "__main__":
+    print(factorial(5))</code></pre>
+                    </div>
+                    <div>
+                        <p class="text-xs text-indigo-400 uppercase tracking-wide mb-2">Output — Java (type-inferred)</p>
+                        <pre class="code-block p-4"><code class="language-java">public static int factorial(int n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return (n * factorial((n - 1)));
+}
+public static void main(String[] args) {
+    System.out.println(factorial(5));
+}</code></pre>
+                    </div>
+                </div>
+                <div class="mt-4 grid grid-cols-3 gap-3 text-xs">
+                    <div class="bg-indigo-500/10 rounded-lg p-3 border border-indigo-500/20">
+                        <span class="text-indigo-400 font-bold block mb-1">Type Inference</span>
+                        <span class="text-slate-300">Parameter <code>n</code> → <code>int</code>; return literal <code>1</code> → <code>int</code>. Multiplication propagates type.</span>
+                    </div>
+                    <div class="bg-pink-500/10 rounded-lg p-3 border border-pink-500/20">
+                        <span class="text-pink-400 font-bold block mb-1">Main Block</span>
+                        <span class="text-slate-300"><code>if __name__ == "__main__"</code> is matched by the special <code>MAIN</code> lexer token → emits <code>main(String[] args)</code>.</span>
+                    </div>
+                    <div class="bg-cyan-500/10 rounded-lg p-3 border border-cyan-500/20">
+                        <span class="text-cyan-400 font-bold block mb-1">Print Mapping</span>
+                        <span class="text-slate-300"><code>visitPrintStmt</code> maps Python's <code>print()</code> to Java's <code>System.out.println()</code>.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════
+             SECTION 4 — LIVE DEMO
+        ════════════════════════════════════════════════════ -->
+        <section id="demo" class="mb-20">
+            <div class="text-center mb-12">
+                <span class="tag bg-purple-500/10 text-purple-400 border border-purple-500/30 mb-4 block w-fit mx-auto">Lê Nhật Anh — Frontend Developer</span>
+                <h2 class="text-5xl font-bold gradient-text mb-3">Live Demo</h2>
+                <p class="text-slate-400">Three-step showcase: translate → inspect → execute</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-10">
+                <div class="p-6 bg-slate-800/50 rounded-2xl border border-slate-700">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">1</span>
+                        <h4 class="font-bold text-indigo-400">Set Direction &amp; Translate</h4>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-3">Type a command to set the mode, then paste your code.</p>
+                    <pre class="code-block p-3 mb-3"><code class="language-python">translate python to java</code></pre>
+                    <pre class="code-block p-3"><code class="language-python">def factorial(n):
+    if n <= 1:
+        return 1
+    return n * factorial(n - 1)
+
+if __name__ == "__main__":
+    print(factorial(5))</code></pre>
+                    <p class="text-xs text-slate-500 mt-3">The command grammar fires first; on <code>"0"</code> fallthrough the code grammar runs and the visitor emits Java.</p>
+                </div>
+                <div class="p-6 bg-slate-800/50 rounded-2xl border border-slate-700">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-sm">2</span>
+                        <h4 class="font-bold text-cyan-400">Inspect the Parse Tree</h4>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-3">Send <code>show grammar</code> — the server retrieves the stored ANTLR tree from conversation context and renders it.</p>
+                    <pre class="code-block p-3 mb-4"><code class="language-python">show grammar</code></pre>
+                    <p class="text-xs text-slate-400 leading-relaxed">The tree reflects every rule in <code>py2java.g4</code>: <code>program → stmt → funcStmt → block → ifStmt → exp → ...</code></p>
+                </div>
+                <div class="p-6 bg-slate-800/50 rounded-2xl border border-slate-700">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="w-8 h-8 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center font-bold text-sm">3</span>
+                        <h4 class="font-bold text-green-400">Execute &amp; Verify</h4>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-3">Send <code>show output</code> — the server writes the Java to a temp file, runs <code>javac</code> + <code>java</code>, captures stdout, and returns it.</p>
+                    <pre class="code-block p-3 mb-4"><code class="language-python">show output</code></pre>
+                    <div class="bg-slate-900 rounded-xl p-3 border border-green-500/30">
+                        <p class="text-xs text-slate-500 mb-1">stdout:</p>
+                        <p class="text-green-400 font-mono text-lg">120</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- React architecture note -->
+            <div class="bg-slate-800/40 border border-purple-500/20 rounded-2xl p-6">
+                <h3 class="text-lg font-bold text-purple-400 mb-4">Frontend Architecture</h3>
+                <div class="grid md:grid-cols-3 gap-6 text-sm">
+                    <div>
+                        <h4 class="text-slate-300 font-semibold mb-2">Multi-Conversation State</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">Each conversation gets a UUID as its <code>conversation_id</code>. The backend stores per-conversation context in memory; the frontend persists conversation history in <code>localStorage</code> so sessions survive page refresh.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-slate-300 font-semibold mb-2">Single API Endpoint</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">All interactions — code, commands, saves, tree requests, execution — go to <code>POST /convert</code> with a <code>conversation_id</code>. The response's <code>type</code> field (<code>converted_code</code>, <code>grammar</code>, <code>output</code>, <code>message</code>) drives how the UI renders the result.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-slate-300 font-semibold mb-2">Tech Stack</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">React 18 · Vite 5 · Tailwind CSS 3 · No additional state libraries. Chat messages are plain component state; code blocks are syntax-highlighted client-side.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center pt-12 border-t border-slate-800">
+            <p class="text-slate-500 text-sm">Principles of Programming Languages &nbsp;·&nbsp; ITC 2026 &nbsp;·&nbsp; JavaPy-Translator</p>
+        </footer>
+    </div>
+
+    <!-- Active nav highlighting -->
+    <script>
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+                    if (active) active.classList.add('active');
+                }
+            });
+        }, { rootMargin: '-30% 0px -60% 0px' });
+        sections.forEach(s => observer.observe(s));
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-antlr4.min.js"></script>
+</body>
+</html>

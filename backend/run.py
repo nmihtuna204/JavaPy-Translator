@@ -2,17 +2,17 @@ import sys, os
 import subprocess
 import unittest
 from antlr4 import *
-from tree_printer_py import parse_tree_py
-from tree_printer_java import parse_tree_java
+from logic.tree_printer_py import parse_tree_py
+from logic.tree_printer_java import parse_tree_java
 
 # Define your variables
-DIR = os.path.dirname(__file__)
-ANTLR_JAR = 'C:/antlr/antlr4-4.9.2-complete.jar'  # Consider making this configurable
-CPL_Dest = 'CompiledFiles'
-PY2JAVA_SRC = 'py2java.g4'
-JAVA2PY_SRC = 'java2py.g4'
-COMMAND_SRC = 'command.g4'
-TESTS = os.path.join(DIR, './tests')
+DIR = os.path.dirname(os.path.abspath(__file__))
+ANTLR_JAR = os.path.join(DIR, 'antlr_jar', 'antlr4-4.9.2-complete.jar')
+CPL_Dest = os.path.join(DIR, 'CompiledFiles')
+PY2JAVA_SRC = os.path.join(DIR, 'grammars', 'py2java.g4')
+JAVA2PY_SRC = os.path.join(DIR, 'grammars', 'java2py.g4')
+COMMAND_SRC = os.path.join(DIR, 'grammars', 'command.g4')
+TESTS = os.path.join(DIR, 'tests')
 
 def printUsage():
     print('python run.py gen')
@@ -28,6 +28,9 @@ def printBreak():
     print('-----------------------------------------------')
 
 def generateAntlr2Python():
+    # Ensure output directory exists
+    os.makedirs(CPL_Dest, exist_ok=True)
+    
     print('Generating py2java grammar...')
     try:
         result = subprocess.run(['java', '-jar', ANTLR_JAR, '-o', CPL_Dest, '-no-listener', '-Dlanguage=Python3', '-visitor', PY2JAVA_SRC], check=True, capture_output=True, text=True)
@@ -67,7 +70,7 @@ def runPythonTest(filename='001.txt'):
         sys.exit(1)
 
     try:
-        from py2javaVisitor import py2javaVisitor
+        from logic.py2javaVisitor import py2javaVisitor
         from CompiledFiles.py2javaLexer import py2javaLexer
         from CompiledFiles.py2javaParser import py2javaParser
     except ImportError as e:
@@ -116,7 +119,7 @@ def runJavaTest(filename='002.txt'):
         sys.exit(1)
 
     try:
-        from java2pyVisitor import java2pyVisitor
+        from logic.java2pyVisitor import java2pyVisitor
         from CompiledFiles.java2pyLexer import java2pyLexer
         from CompiledFiles.java2pyParser import java2pyParser
     except ImportError as e:
@@ -165,7 +168,7 @@ def runCommandTest(filename='003.txt'):
         sys.exit(1)
 
     try:
-        from commandVisitor import commandVisitor
+        from logic.commandVisitor import commandVisitor
         from CompiledFiles.commandLexer import commandLexer
         from CompiledFiles.commandParser import commandParser
     except ImportError as e:
