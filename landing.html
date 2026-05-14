@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaPy-Translator | PPL Presentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        .gradient-text {
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .code-block {
+            background: #1a1b26 !important;
+            border-radius: 12px !important;
+            border: 1px solid #3b4261 !important;
+            font-size: 0.85rem !important;
+        }
+        section { scroll-margin-top: 5rem; }
+        .member-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+        .member-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white font-sans selection:bg-indigo-500/30">
+    <nav class="fixed top-0 w-full bg-slate-900/80 backdrop-blur-md z-50 border-b border-slate-800">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <span class="font-bold text-xl gradient-text">JavaPy-Translator</span>
+            <div class="flex gap-6 text-sm font-medium text-slate-400">
+                <a href="#team" class="hover:text-indigo-400">Team & Vision</a>
+                <a href="#grammar" class="hover:text-indigo-400 text-cyan-400 font-bold underline">Grammar Design</a>
+                <a href="#logic" class="hover:text-indigo-400">Mapping Logic</a>
+                <a href="#demo" class="hover:text-indigo-400">Live Demo</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-6 pt-24 pb-12">
+        
+        <!-- Section 1: Team & Vision (Member 1: Hung) -->
+        <section id="team" class="mb-24">
+            <header class="text-center mb-16">
+                <h1 class="text-6xl font-extrabold mb-4 gradient-text">JavaPy-Translator</h1>
+                <p class="text-xl text-slate-400 mb-12">A PPL Framework for Formal Language Translation</p>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+                    <div class="member-card p-6 rounded-2xl">
+                        <h4 class="font-bold text-indigo-400">Lê Hưng (Lead)</h4>
+                        <p class="text-xs text-slate-500 mb-2">ITCSIU222271</p>
+                        <p class="text-sm text-slate-300">Backend Architect, API Design, Docker Orchestration.</p>
+                    </div>
+                    <div class="member-card p-6 rounded-2xl">
+                        <h4 class="font-bold text-purple-400">Lê Nhật Anh</h4>
+                        <p class="text-xs text-slate-500 mb-2">ITCSIU22254</p>
+                        <p class="text-sm text-slate-300">Frontend Developer, Persistence, State Management.</p>
+                    </div>
+                    <div class="member-card p-6 rounded-2xl">
+                        <h4 class="font-bold text-pink-400">Nguyễn Minh Tuấn</h4>
+                        <p class="text-xs text-slate-500 mb-2">ITCSIU22298</p>
+                        <p class="text-sm text-slate-300">Logic Implementer, Type Inference, Visitor Mapping.</p>
+                    </div>
+                    <div class="member-card p-6 rounded-2xl border-cyan-500/50">
+                        <h4 class="font-bold text-cyan-400">Nguyễn Minh Phúc</h4>
+                        <p class="text-xs text-slate-500 mb-2">ITCSIU22225</p>
+                        <p class="text-sm text-slate-300 font-bold">Grammar Architect, ANTLR4 CFG Specialist.</p>
+                    </div>
+                </div>
+            </header>
+        </section>
+
+        <!-- Section 2: Grammar Design (Member 4: Phuc) - EXPANDED -->
+        <section id="grammar" class="mb-32">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold mb-4">Core: Grammar Architecture</h2>
+                <p class="text-cyan-400 font-mono">Formal Context-Free Grammar Design in ANTLR4</p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Col 1: Structural Rules -->
+                <div class="space-y-6">
+                    <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                        <h3 class="text-xl font-bold mb-4 text-cyan-400">1. Hierarchy Design</h3>
+                        <p class="text-sm text-slate-400 mb-4">We use a strict recursive descent structure. The `program` rule acts as the entry point, delegating to `classDef` for Java or a sequence of `stmt` for Python.</p>
+                        <pre class="code-block"><code class="language-antlr">/* java2py.g4 */
+program: classDef EOF;
+classDef: PUBLIC CLASS ID '{' classBody '}';
+methodDef: PUBLIC STATIC javaType ID 
+          '(' param? ')' block;</code></pre>
+                    </div>
+                    <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                        <h3 class="text-xl font-bold mb-4 text-cyan-400">2. Command DSL</h3>
+                        <p class="text-sm text-slate-400 mb-4">We built a Natural Language interface by defining a command grammar for user intent.</p>
+                        <pre class="code-block"><code class="language-antlr">/* command.g4 */
+command: verb noun* target?;
+verb: ('show' | 'translate' | 'save');
+target: source TO target_lang;</code></pre>
+                    </div>
+                </div>
+
+                <!-- Col 2: Expressions & Precedence -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 h-full">
+                        <h3 class="text-xl font-bold mb-4 text-cyan-400">3. Lexer vs. Parser & Precedence</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-300 mb-2 uppercase">Lexical Sensitivity</h4>
+                                <p class="text-xs text-slate-400 mb-4 leading-relaxed">Python's indentation is handled by the `NL` rule, preserving whitespace context for the parser, whereas Java's Lexer is designed to be whitespace-agnostic.</p>
+                                <pre class="code-block"><code class="language-antlr">/* Python Lexer Snippet */
+NL: ('\r'? '\n' [ \t]*);
+WS: [ \t]+ -> skip;</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-300 mb-2 uppercase">Operator Precedence</h4>
+                                <p class="text-xs text-slate-400 mb-4 leading-relaxed">By structuring rules from `logicExp` down to `atom`, we enforce that Multiplication happens before Addition without needing explicit parenthesis.</p>
+                                <pre class="code-block"><code class="language-antlr">/* Recursive Expression Hierarchy */
+exp: logicExp;
+logicExp: compExp (op=('&&'|'||') compExp)*;
+addExp: mulExp (op=('+'|'-') mulExp)*;
+mulExp: unaryExp (op=('*'|'/') unaryExp)*;</code></pre>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                            <h4 class="text-sm font-bold text-indigo-400 mb-1">PPL Achievement:</h4>
+                            <p class="text-xs text-slate-300">Successfully mapped Python's dynamic control flow into Java's static block structure using LL(*) parsing strategies.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Semantic Logic (Member 3: Tuan) -->
+        <section id="logic" class="mb-32">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="inline-block bg-pink-500/10 text-pink-400 px-4 py-2 rounded-full border border-pink-500/20 text-sm font-bold mb-4">
+                        [Nguyễn Minh Tuấn] Logic Implementer
+                    </div>
+                    <h2 class="text-4xl font-bold mb-6">Visitor Pattern & Type Inference</h2>
+                    <p class="text-slate-300 mb-6 leading-relaxed">
+                        Our translator uses the **Visitor Pattern** to decouple the translation logic from the parse tree. The **Type Inference Engine** is the most complex part, dynamically determining if a Python variable should be an `int`, `double`, or `String` in Java by analyzing the Abstract Syntax Tree (AST).
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex gap-4">
+                            <span class="text-pink-400 font-bold">AST Walk:</span> Context-aware traversal.
+                        </li>
+                        <li class="flex gap-4">
+                            <span class="text-pink-400 font-bold">Type Guessing:</span> Dynamic → Static mapping.
+                        </li>
+                    </ul>
+                </div>
+                <div class="code-container">
+                    <pre class="code-block"><code class="language-python"># py2javaVisitor.py Snippet
+def inferType(self, ctx):
+    if ctx.STRING(): return "String"
+    if ctx.NUMBER(): return "int"
+    if ctx.FLOAT(): return "double"
+    return "Object"</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Live Demo (Integrated) -->
+        <section id="demo" class="mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-5xl font-bold gradient-text mb-4">Live Demo</h2>
+                <div class="flex justify-center gap-4">
+                    <span class="px-4 py-1 bg-slate-800 rounded-full text-xs text-slate-400">Translation</span>
+                    <span class="px-4 py-1 bg-slate-800 rounded-full text-xs text-slate-400">Parse Tree</span>
+                    <span class="px-4 py-1 bg-slate-800 rounded-full text-xs text-slate-400">Execution</span>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="p-6 bg-slate-800/50 rounded-2xl border border-slate-700">
+                    <h4 class="font-bold text-indigo-400 mb-2">1. The Code</h4>
+                    <p class="text-xs text-slate-500 mb-4">Translate Python loop to Java.</p>
+                    <code class="text-[10px] text-slate-400 block bg-slate-900 p-2 rounded">for i in range(5): print(i)</code>
+                </div>
+                <div class="p-6 bg-slate-800/50 rounded-2xl border border-slate-700">
+                    <h4 class="font-bold text-purple-400 mb-2">2. The Tree</h4>
+                    <p class="text-xs text-slate-500 mb-4">Visualize the ANTLR nodes.</p>
+                    <code class="text-[10px] text-slate-400 block bg-slate-900 p-2 rounded">show grammar</code>
+                </div>
+                <div class="p-6 bg-slate-800/50 rounded-2xl border border-slate-700">
+                    <h4 class="font-bold text-pink-400 mb-2">3. The Result</h4>
+                    <p class="text-xs text-slate-500 mb-4">Run the compiled output.</p>
+                    <code class="text-[10px] text-slate-400 block bg-slate-900 p-2 rounded">show output</code>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center pt-12 border-t border-slate-800">
+            <p class="text-slate-500">Principles of Programming Languages | ITC, 2026</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-antlr4.min.js"></script>
+</body>
+</html>
